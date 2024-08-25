@@ -1,16 +1,28 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+import 'camera/camera_controller.dart';
+import 'camera/photo_taker.dart';
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+  final cameras = await availableCameras();
+  final firstCamera = cameras.first;
+  runApp(MyApp(firstCamera, camera: firstCamera,));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp(CameraDescription firstCamera, {
+    super.key,
+    required this.camera,
+  });
+
+  final CameraDescription camera;
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+
     return MaterialApp(
       title: '더웰 수학',
       theme: ThemeData(
@@ -18,14 +30,23 @@ class MyApp extends StatelessWidget {
         colorScheme: const ColorScheme.dark(),
       ),
       debugShowCheckedModeBanner: false,
-      home: const MyHomePage(title: '더웰 수학'),
+      home: MyHomePage(
+        title: '더웰 수학',
+        camera: camera,
+      ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage({
+    super.key,
+    required this.title,
+    required this.camera
+  });
+
   final String title;
+  final CameraDescription camera;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -40,6 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,7 +73,12 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             TextButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => TakePictureScreen(camera: widget.camera),
+                ));
+              },
               icon: const Icon(Icons.camera_enhance_rounded),
               label: const Text(
                 '수학 문제 사진 찍기',
@@ -88,8 +115,8 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
         tooltip: 'Increment',
-        child: const Icon(Icons.live_help_rounded),
         backgroundColor: Colors.yellow,
+        child: const Icon(Icons.live_help_rounded),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
