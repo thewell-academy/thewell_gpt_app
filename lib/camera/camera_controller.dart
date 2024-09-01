@@ -33,6 +33,8 @@ class TakePictureScreen extends StatefulWidget {
 class TakePictureScreenState extends State<TakePictureScreen> {
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
+  int selectedIndex = 0;
+  List<bool> selected = [true, false];
 
   @override
   void initState() {
@@ -51,10 +53,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     super.dispose();
   }
 
-  Future<http.StreamedResponse> requestImage(String imagePath) async {
+  Future<void> requestImage(String imagePath, Function(String) onResult) async {
 
     Image myImage = Image.network(imagePath);
-
     final ImageStream imageStream = myImage.image.resolve(const ImageConfiguration());
     final Completer<ui.Image> completer = Completer<ui.Image>();
 
@@ -65,9 +66,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     );
 
     final ui.Image uiImage = await completer.future;
-
     final ByteData? byteData = await uiImage.toByteData(format: ui.ImageByteFormat.png);
-
     final Uint8List? bytes = byteData?.buffer.asUint8List();
 
     var request = http.MultipartRequest("POST", Uri.parse("http://127.0.0.1:8000/upload-file"));
@@ -75,82 +74,159 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       http.MultipartFile.fromBytes("file", bytes as List<int>, filename: "image.png"),
     );
 
-    return await request.send();
+    final response = await request.send();
+    final httpResponse = await http.Response.fromStream(response);
+
+    final responseData = (httpResponse.statusCode == 200)
+        ? jsonDecode(httpResponse.body)
+        : "알 수 없는 오류 발생";
+
+    onResult(responseData);
 
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Take a picture')),
-      body: FutureBuilder<void>(
-        future: _initializeControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            // If the Future is complete, display the preview.
-            return CameraPreview(_controller);
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          try {
-            await _initializeControllerFuture;
-
-            final image = await _controller.takePicture();
-
-            http.StreamedResponse response = await requestImage(image.path);
-            http.Response httpResponse = await http.Response.fromStream(response);
-
-            dynamic responseData = (response.statusCode == 200)
-                ? await jsonDecode(httpResponse.body)
-                : "Something's wrong";
-
-            // Navigator.of(context).pop();
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => DisplayPictureScreen(
-                  imagePath: image.path,
-                  answerString: responseData,
+      appBar: AppBar(title: const Text('문제 사진 찍기')),
+      body: Column(
+        children: <Widget>[
+          FutureBuilder<void>(
+            future: _initializeControllerFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                // If the Future is complete, display the preview.
+                return CameraPreview(_controller);
+              } else {
+                return const Center(child: CircularProgressIndicator());
+              }
+            },
+          ),
+          Container(
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+            child: ToggleButtons(
+              isSelected: selected,
+              children: const [Text("수학"), Text("과학")],
+              onPressed: (int index) {
+                setState(() {
+                  selectedIndex = index;
+                  selected = selected.map((e) => false).toList();
+                  selected[selectedIndex] = true;
+                });
+              },
+            ),
+          ),
+          const Spacer(),
+          Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
+            child: Row(
+              children: [
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: FloatingActionButton(
+                    onPressed: () {},
+                    tooltip: '사진 업로드하기',
+                    // backgroundColor: Colors.yellow,
+                    child: const Icon(Icons.upload_rounded),
+                  ),
                 ),
-              ),
-            );
+                const Spacer(),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: FloatingActionButton(
+                    onPressed: () async {
+                      try {
+                        await _initializeControllerFuture;
 
-          } catch (e) {
-            print(e);
-          }
-        },
-        child: const Icon(Icons.camera_alt),
+                        final image = await _controller.takePicture();
+
+                        Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => DisplayPictureScreen(
+                                  imagePath: image.path,
+                                  onImageProcessed: (result) {
+                                    print('Result: $result');
+                                  }
+                              ),
+                            )
+                        );
+
+                        requestImage(image.path, (result) {
+                          Navigator.of(context).pop();
+                          Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (context) => DisplayPictureScreen(
+                                    imagePath: image.path,
+                                    answerString: result,
+                                  )
+                              )
+                          );
+                        });
+                      }
+                      catch (e) {
+                        print(e);
+                      }
+                    },
+                    child: const Icon(Icons.camera_alt),
+                  ),
+                )
+              ],
+            ),
+          )
+        ],
       ),
+
+
     );
   }
 }
 
-class DisplayPictureScreen extends StatelessWidget {
+class DisplayPictureScreen extends StatefulWidget {
   final String imagePath;
-  final dynamic answerString;
+  final String? answerString;
+  final Function(String)? onImageProcessed;
 
   const DisplayPictureScreen({
     super.key,
     required this.imagePath,
-    this.answerString
+    this.answerString,
+    this.onImageProcessed,
   });
 
   @override
-  Widget build(BuildContext context) {
+  _DisplayPictureScreenState createState() => _DisplayPictureScreenState();
+}
 
+class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
+  String? _answerString;
+
+  @override
+  void initState(){
+    super.initState();
+    _answerString = widget.answerString;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Display the Picture')),
+      appBar: AppBar(title: const Text('풀이 결과')),
       body: Column(
         children: [
-          kIsWeb ? Image.network(imagePath) : Image.file(File(imagePath)),
-          answerString != null
-              ? Text(answerString.toString())
-              : CircularProgressIndicator(),
+          kIsWeb ? Image.network(widget.imagePath) : Image.file(File(widget.imagePath)),
+          _answerString != null
+              ? Text(_answerString!)
+              : const CircularProgressIndicator(),
         ],
-      )
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context).pop();
+        },
+        tooltip: '다시 찍기',
+        // backgroundColor: Colors.yellow,
+        child: const Icon(Icons.refresh_rounded),
+      ),
 
 
     );

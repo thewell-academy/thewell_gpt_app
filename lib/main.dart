@@ -24,14 +24,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return MaterialApp(
-      title: '더웰 수학',
+      title: '더웰 GPT',
       theme: ThemeData(
         primaryColor: Colors.black87,
         colorScheme: const ColorScheme.dark(),
       ),
       debugShowCheckedModeBanner: false,
       home: MyHomePage(
-        title: '더웰 수학',
+        title: '더웰 GPT',
         camera: camera,
       ),
     );
@@ -53,14 +53,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -81,23 +73,13 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               icon: const Icon(Icons.camera_enhance_rounded),
               label: const Text(
-                '수학 문제 사진 찍기',
+                '문제 사진 찍기',
                 style: TextStyle(
                     fontSize: 25
                 ),
               ),
             ),
-            const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 20)),
-            TextButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.upload_file_rounded),
-              label: const Text(
-                '문제 사진 업로드하기',
-                style: TextStyle(
-                    fontSize: 25
-                ),
-              ),
-            ),
+
             const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 20)),
             TextButton.icon(
                 onPressed: () {},
@@ -112,12 +94,12 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        backgroundColor: Colors.yellow,
-        child: const Icon(Icons.live_help_rounded),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: _incrementCounter,
+      //   tooltip: 'Increment',
+      //   backgroundColor: Colors.yellow,
+      //   child: const Icon(Icons.live_help_rounded),
+      // ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
