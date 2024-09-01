@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'camera/camera_controller.dart';
 import 'camera/photo_taker.dart';
+import 'package:http/http.dart' as http;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,7 +20,6 @@ class MyApp extends StatelessWidget {
 
   final CameraDescription camera;
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
 
