@@ -1,6 +1,7 @@
 // A screen that allows users to take a picture using a given camera.
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
@@ -16,6 +17,8 @@ import 'dart:html' as html;
 import 'package:path/path.dart' as path;
 
 import 'package:path_provider/path_provider.dart';
+
+import 'file_selector.dart';
 
 
 class TakePictureScreen extends StatefulWidget {
@@ -35,6 +38,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   late Future<void> _initializeControllerFuture;
   int selectedIndex = 0;
   List<bool> selected = [true, false];
+  bool _isLoading = false;
+  String? _serverResult;
 
   @override
   void initState() {
@@ -79,7 +84,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
     final responseData = (httpResponse.statusCode == 200)
         ? jsonDecode(httpResponse.body)
-        : "알 수 없는 오류 발생";
+        : "알 수 없는 오류 발생. \n 다시 시도해 주세요.";
 
     onResult(responseData);
 
@@ -96,7 +101,17 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
                 // If the Future is complete, display the preview.
-                return CameraPreview(_controller);
+                return SizedBox(
+                  width: min(
+                    _controller.value.previewSize!.width,
+                    MediaQuery.of(context).size.width,
+                  ),
+                  height: min(
+                    _controller.value.previewSize!.height,
+                    MediaQuery.of(context).size.height * 0.7,
+                  ),
+                  child: CameraPreview(_controller),
+                );
               } else {
                 return const Center(child: CircularProgressIndicator());
               }
@@ -125,16 +140,20 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                 Align(
                   alignment: Alignment.bottomLeft,
                   child: FloatingActionButton(
-                    onPressed: () {},
+                    heroTag: "upload",
+                    onPressed: () {
+                      Navigator.of(context).push(_createImageUploadRoute());
+                    },
                     tooltip: '사진 업로드하기',
                     // backgroundColor: Colors.yellow,
-                    child: const Icon(Icons.upload_rounded),
+                    child: const Icon(Icons.photo_album_rounded),
                   ),
                 ),
                 const Spacer(),
                 Align(
                   alignment: Alignment.bottomRight,
                   child: FloatingActionButton(
+                    heroTag: "photo",
                     onPressed: () async {
                       try {
                         await _initializeControllerFuture;
@@ -178,6 +197,25 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       ),
 
 
+    );
+  }
+
+  Route _createImageUploadRoute() {
+    return PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => ImageSelectorWidget(),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 1.0);
+        const end = Offset(0.0, 0.0);
+        const curve = Curves.ease;
+
+        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        var offsetAnimation = animation.drive(tween);
+
+        return SlideTransition(
+          position: offsetAnimation,
+          child: child,
+        );
+      },
     );
   }
 }
