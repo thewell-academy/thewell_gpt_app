@@ -40,6 +40,10 @@ dependencies:
   path: ^1.8.2
   http: ^0.13.6
   image_picker: ^0.8.5+3
+  flutter_tex: ^4.0.3+4
+  flutter_markdown: ^0.6.9+1
+  device_info_plus: ^4.0.0
+  platform_device_id: ^1.0.1
 
 dev_dependencies:
   flutter_test:
