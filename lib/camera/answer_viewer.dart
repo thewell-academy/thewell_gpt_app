@@ -9,7 +9,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tex/flutter_tex.dart';
 import 'package:http/http.dart' as http;
 import 'package:platform_device_id/platform_device_id.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+
+import 'package:thewell_frontend/util/util.dart';
 
 import 'package:thewell_frontend/util/util.dart';
 
@@ -78,16 +81,17 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
     final ByteData? byteData = await uiImage.toByteData(format: ui.ImageByteFormat.png);
     final Uint8List? bytes = byteData?.buffer.asUint8List();
 
-    String? deviceId = await PlatformDeviceId.getDeviceId;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userId = prefs.getString("userId")?? "no user";
+
     var request = http.MultipartRequest(
         "POST",
-        Uri.parse("$serverUrl/ask/${getSubject(widget.selectedIndex)}/${deviceId.toString()}}")
+        Uri.parse("$serverUrl/ask/${getSubject(widget.selectedIndex)}/$userId")
     );
 
     request.files.add(
       http.MultipartFile.fromBytes("file", bytes as List<int>, filename: "image.png"),
     );
-    // request.headers['subject'] = "$selectedIndex";
 
     final response = await request.send();
     final httpResponse = await http.Response.fromStream(response);
@@ -113,24 +117,11 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
         ? const TeXViewRenderingEngine.katex()
         : const TeXViewRenderingEngine.mathjax();
 
-    String _simplifyLatex(String input) {
 
-      input = input.replaceAll(r'\\(', r'\(').replaceAll(r'\\)', r'\)');
-      input = input.replaceAll(r'\\[', r'\[').replaceAll(r'\\]', r'\]');
-      input = input.replaceAll(r'\n', '\n');
-      input = input.replaceAll(r'###', '<br>');
-
-      final superscriptPattern = RegExp(r'([a-zA-Z])\^([0-9]+)');
-      input = input.replaceAllMapped(superscriptPattern, (match) {
-        return '${match.group(1)}^{${match.group(2)}}';
-      });
-
-      return input;
-    }
 
     return Scaffold(
       appBar: AppBar(title: const Text('풀이 결과')),
-      body: SingleChildScrollView(  // Wrap the content in SingleChildScrollView
+      body: SingleChildScrollView(
         child: Column(
           children: [
             Image.file(File(widget.image!.path)),
@@ -147,20 +138,20 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
               child: TeXView(
                 // renderingEngine: const TeXViewRenderingEngine.mathjax(),
                 child: TeXViewDocument(
-                  _simplifyLatex(serverResult!),
-                  style: const TeXViewStyle(
-                    padding: TeXViewPadding.all(10),
+                  simplifyLatex(serverResult!),
+                  style: TeXViewStyle(
+                    padding: const TeXViewPadding.all(10),
                     contentColor: Colors.white,
+                    fontStyle: TeXViewFontStyle(fontSize: 12, fontWeight: TeXViewFontWeight.lighter),
                   ),
                 ),
-                // loadingWidgetBuilder: (context) {
-                //   return const CupertinoActivityIndicator();
-                // },
+                loadingWidgetBuilder: (context) {
+                  return const CupertinoActivityIndicator();
+                },
               ),
             ),
           ],
         ),
-
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

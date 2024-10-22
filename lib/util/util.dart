@@ -5,44 +5,41 @@ import 'dart:async';  // Import for Timer
 
 Timer? _retryTimer;
 
-String serverUrl = "http://172.30.1.26:8000";
+String serverUrl = "http://gpt.thewell-academy.com";
 
-Future<void> serverHandShake(Function(String) updateString) async {
-  print("handshake ${DateTime.now()}");
+Future<void> serverHandShake(Function(String, Color) updateStatus) async {
 
   try {
     String? deviceId = await PlatformDeviceId.getDeviceId;
 
     // Add a timeout of 10 seconds to the HTTP request
     final response = await http
-        .get(Uri.parse('$serverUrl/${deviceId.toString()}'))
+        .get(Uri.parse('$serverUrl/auth/$deviceId'))
         .timeout(const Duration(seconds: 5));
 
     if (response.statusCode != 200) {
       // If the response is not 200, change the theme and retry after 5 seconds
-      updateString("서버 오류");
+      updateStatus("서버 오류", Colors.red);
 
       // Retry after 5 seconds
-      _retryTimer = Timer(const Duration(seconds: 5), () => serverHandShake(updateString));
+      _retryTimer = Timer(const Duration(seconds: 5), () => serverHandShake(updateStatus));
     } else {
-      // If the response is 200, change the theme to green and cancel the timer
-      // updateString("더웰 GPT");
+      updateStatus("더웰 GPT", Colors.black87);
       _retryTimer?.cancel();  // Stop retrying if the response is 200
     }
   } on TimeoutException catch (_) {
     // Handle timeout by updating theme and retrying after 5 seconds
-    print("Request to server timed out");
-    updateString("서버 오류");
+    updateStatus("서버 연결 실패", Colors.orange);
 
     // Retry after 5 seconds
-    _retryTimer = Timer(const Duration(seconds: 5), () => serverHandShake(updateString));
+    _retryTimer = Timer(const Duration(seconds: 5), () => serverHandShake(updateStatus));
   } catch (e) {
     // Handle other errors by updating theme and retrying after 5 seconds
     print("Error occurred: $e");
-    updateString("서버 오류");
+    updateStatus("알 수 없는 오류", Colors.red);
 
     // Retry after 5 seconds
-    _retryTimer = Timer(const Duration(seconds: 5), () => serverHandShake(updateString));
+    _retryTimer = Timer(const Duration(seconds: 5), () => serverHandShake(updateStatus));
   }
 }
 
@@ -54,4 +51,19 @@ String getSubject(int index) {
   } else {
     return "unknown";
   }
+}
+
+String simplifyLatex(String input) {
+
+  input = input.replaceAll(r'\\(', r'\(').replaceAll(r'\\)', r'\)');
+  input = input.replaceAll(r'\\[', r'\[').replaceAll(r'\\]', r'\]');
+  input = input.replaceAll(r'\n', '\n');
+  input = input.replaceAll(r'###', '<br>');
+
+  final superscriptPattern = RegExp(r'([a-zA-Z])\^([0-9]+)');
+  input = input.replaceAllMapped(superscriptPattern, (match) {
+    return '${match.group(1)}^{${match.group(2)}}';
+  });
+
+  return input;
 }
