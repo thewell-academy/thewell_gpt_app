@@ -27,11 +27,11 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>We need access to the camera to capture photos.</string>
+	<string>This app uses the camera to capture photos that you can use to ask questions.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We need access to your location.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access to your photo library to upload images.</string>
+	<string>This app needs access to your photo library to allow you to upload images and use them for question submissions.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
