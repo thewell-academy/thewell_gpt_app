@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 # Detect the current Git branch
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 

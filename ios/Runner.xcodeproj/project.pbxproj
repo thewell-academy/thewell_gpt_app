@@ -132,6 +132,7 @@
 			buildConfigurationList = 97C147051CF9000F007C117D /* Build configuration list for PBXNativeTarget "Runner" */;
 			buildPhases = (
 				80852780F71F12EDAD8B52CE /* [CP] Check Pods Manifest.lock */,
+				56A0ECAB2CCDE6810050F168 /* ShellScript */,
 				9740EEB61CF901F6004384FC /* Run Script */,
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
@@ -229,6 +230,24 @@
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
 		};
+		56A0ECAB2CCDE6810050F168 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 8;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\nset -e\n# Detect the current Git branch\nBRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)\n\n# Define server URLs based on the branch\nif [[ \"$BRANCH_NAME\" == \"main\" ]]; then\n  THEWELL_GPT_SERVER_URL=\"http://gpt.thewell-academy.com\"\nelse\n  LOCAL_IP=$(ifconfig | grep -E 'inet (172\\.)' | awk '{print $2}' | head -n 1)\n  if [ -z \"$LOCAL_IP\" ]; then\n      echo \"No valid local IP address found in the 172.x.x.x range. Defaulting to localhost.\"\n      LOCAL_IP=\"127.0.0.1\"\n  fi\n  THEWELL_GPT_SERVER_URL=\"http://$LOCAL_IP:8000\"\nfi\n\n# Export the SERVER_URL as an environment variable\nexport THEWELL_GPT_SERVER_URL\n\n# Write the server URL to a Dart file\necho \"const String serverUrl = '$THEWELL_GPT_SERVER_URL';\" > lib/util/server_config.dart\n";
+		};
 		80852780F71F12EDAD8B52CE /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -264,7 +283,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
+			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
