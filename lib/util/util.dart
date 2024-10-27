@@ -15,7 +15,7 @@ Future<void> serverHandShake(Function(String, Color) updateStatus) async {
 
     // Add a timeout of 10 seconds to the HTTP request
     final response = await http
-        .get(Uri.parse('$serverUrl/auth/$deviceId'))
+        .get(Uri.parse('$serverUrl/ping'))
         .timeout(const Duration(seconds: 5));
 
     if (response.statusCode != 200) {
