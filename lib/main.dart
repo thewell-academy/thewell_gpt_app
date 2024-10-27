@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:thewell_frontend/history/history_viewer.dart';
+import 'package:thewell_frontend/util/server_config.dart';
 import 'package:thewell_frontend/util/util.dart';
 import 'dart:io';
 
@@ -15,6 +16,7 @@ Future<void> main() async {
   bool isLoggedIn = await checkLoginStatus();
   final cameras = await availableCameras();
   final firstCamera = cameras.first;
+  print("listerning server: $gptServerUrl");
   runApp(MyApp(firstCamera, camera: firstCamera,isLoggedIn: isLoggedIn,));
 }
 
