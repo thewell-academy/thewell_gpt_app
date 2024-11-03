@@ -1,6 +1,9 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart' as picker;
+import 'package:image_editor/image_editor.dart' as editor;
 import 'package:image_picker/image_picker.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:thewell_frontend/history/history_viewer.dart';
 import 'package:thewell_frontend/util/util.dart';
@@ -110,26 +113,67 @@ class _MyHomePageState extends State<MyHomePage> {
   List<bool> selected = [true, false];
 
   // Function to capture image using the native camera app
-  Future<void> _takePicture() async {
+  Future<void> _takePictureAndEdit() async {
     try {
       // Pick an image using the camera
       final pickedFile = await _picker.pickImage(source: ImageSource.camera);
 
-      // If an image is returned, set the image in the state
       if (pickedFile != null) {
-        setState(() {
-          _image = File(pickedFile.path);
-        });
+        // Set the captured image file in state
+        _image = File(pickedFile.path);
+
+        // Request permission to access photos using the updated method
+        final permission = await PhotoManager.requestPermissionExtend();
+
+        if (permission.isAuth) {  // Check if the permission was granted
+          // Save the image to the photo library
+          final assetEntity = await PhotoManager.editor.saveImageWithPath(pickedFile.path, title: '');
+
+          if (assetEntity != null) {
+            // Open the image for editing
+            final editedFile = await _editImage(assetEntity);
+            if (editedFile != null) {
+              setState(() {
+                _image = editedFile;
+              });
+            }
+          }
+        } else {
+          // Handle permission denial
+          print("Permission denied");
+        }
       }
     } catch (e) {
-      print("Error taking picture: $e");
+      print("Error taking or editing picture: $e");
     }
+  }
+
+  Future<File?> _editImage(AssetEntity assetEntity) async {
+    try {
+      final file = await assetEntity.file;
+      if (file != null) {
+        // Configure the crop options
+        final cropOption = editor.ImageEditorOption();
+        cropOption.addOption(editor.ClipOption(width: 1000, height: 1000)); // Set crop size as desired
+
+        final editedImage = await editor.ImageEditor.editFileImage(
+          file: file,
+          imageEditorOption: cropOption,
+        );
+
+        // Return the edited file
+        return File.fromRawPath(editedImage!);
+      }
+    } catch (e) {
+      print("Error editing image: $e");
+    }
+    return null;
   }
 
   Future<void> _browsePicture() async {
     try {
-      // Pick an image using the camera
-      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      // Pick an image using the gallery from image_picker
+      final pickedFile = await _picker.pickImage(source: picker.ImageSource.gallery);
 
       // If an image is returned, set the image in the state
       if (pickedFile != null) {
@@ -277,7 +321,7 @@ class _MyHomePageState extends State<MyHomePage> {
         extendBody: true,
         floatingActionButton: FloatingActionButton(
           onPressed: (){
-            _takePicture().then((value) {
+            _takePictureAndEdit().then((value) {
               if (_image != null) {
                 Navigator.push(
                   context,
