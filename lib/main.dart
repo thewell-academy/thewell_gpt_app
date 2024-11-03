@@ -1,6 +1,11 @@
 import 'package:camera/camera.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart' as picker;
+import 'package:image_editor/image_editor.dart' as editor;
 import 'package:image_picker/image_picker.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:thewell_frontend/history/history_viewer.dart';
 import 'package:thewell_frontend/util/server_config.dart';
@@ -10,6 +15,9 @@ import 'dart:io';
 import 'auth/login.dart';
 import 'camera/answer_viewer.dart';
 import 'package:http/http.dart' as http;
+
+const platform = MethodChannel('com.example.thewellFrontend/image_editor');
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -112,26 +120,35 @@ class _MyHomePageState extends State<MyHomePage> {
   List<bool> selected = [true, false];
 
   // Function to capture image using the native camera app
-  Future<void> _takePicture() async {
+  Future<void> _takePictureAndEdit() async {
+    setState(() {
+      _image = null;
+    });
     try {
-      // Pick an image using the camera
-      final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+      // Call native code to open the camera with editing enabled
+      final editedImagePath = await platform.invokeMethod<String>('takeAndEditPhoto');
 
-      // If an image is returned, set the image in the state
-      if (pickedFile != null) {
+      if (editedImagePath != null) {
         setState(() {
-          _image = File(pickedFile.path);
+          _image = File(editedImagePath);
         });
+      } else {
+        print("Edited image path is null.");
+
       }
-    } catch (e) {
-      print("Error taking picture: $e");
+    } on PlatformException catch (e) {
+      setState(() {
+        _image = null;
+      });
+      print("Error editing picture: $e");
     }
   }
 
+
   Future<void> _browsePicture() async {
     try {
-      // Pick an image using the camera
-      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      // Pick an image using the gallery from image_picker
+      final pickedFile = await _picker.pickImage(source: picker.ImageSource.gallery);
 
       // If an image is returned, set the image in the state
       if (pickedFile != null) {
@@ -142,6 +159,9 @@ class _MyHomePageState extends State<MyHomePage> {
         await _showConfirmationDialog();
       }
     } catch (e) {
+      setState(() {
+        _image = null;
+      });
       print("Error taking picture: $e");
     }
   }
@@ -194,22 +214,23 @@ class _MyHomePageState extends State<MyHomePage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
+        return CupertinoAlertDialog(
           title: Text("로그아웃"),
           content: Text("정말 로그아웃 할까요?"),
           actions: [
-            TextButton(
+            CupertinoDialogAction(
               onPressed: () {
                 Navigator.of(context).pop();  // Close the dialog
               },
               child: Text("아니오"),
             ),
-            TextButton(
+            CupertinoDialogAction(
               onPressed: () {
                 Navigator.of(context).pop();  // Close the dialog
                 _logout(context);  // Proceed with logout
               },
               child: Text("네"),
+              isDefaultAction: true,
             ),
           ],
         );
@@ -279,7 +300,7 @@ class _MyHomePageState extends State<MyHomePage> {
         extendBody: true,
         floatingActionButton: FloatingActionButton(
           onPressed: (){
-            _takePicture().then((value) {
+            _takePictureAndEdit().then((value) {
               if (_image != null) {
                 Navigator.push(
                   context,

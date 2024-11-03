@@ -5,7 +5,7 @@ BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 
 # Define server URLs based on the branch
 if [[ "$BRANCH_NAME" == "main" ]]; then
-  THEWELL_GPT_SERVER_URL="http://gpt.thewell-academy.com"
+  THEWELL_GPT_SERVER_URL="http://thewell-gpt-lb-101888234.ap-northeast-2.elb.amazonaws.com"
 else
   LOCAL_IP=$(ifconfig | grep -E 'inet (172\.)' | awk '{print $2}' | head -n 1)
   if [ -z "$LOCAL_IP" ]; then

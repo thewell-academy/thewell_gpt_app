@@ -6,6 +6,8 @@ PODS:
   - device_info_plus (0.0.1):
     - Flutter
   - Flutter (1.0.0)
+  - image_editor_common (1.0.0):
+    - Flutter
   - image_picker_ios (0.0.1):
     - Flutter
   - modal_progress_hud_nsn (0.0.1):
@@ -13,11 +15,15 @@ PODS:
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - photo_manager (2.0.0):
+    - Flutter
+    - FlutterMacOS
   - platform_device_id (0.0.1):
     - Flutter
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - TOCropViewController (2.7.4)
   - webview_flutter_wkwebview (0.0.1):
     - Flutter
 
@@ -26,12 +32,19 @@ DEPENDENCIES:
   - device_info (from `.symlinks/plugins/device_info/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - Flutter (from `Flutter`)
+  - image_editor_common (from `.symlinks/plugins/image_editor_common/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - modal_progress_hud_nsn (from `.symlinks/plugins/modal_progress_hud_nsn/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/ios`)
+  - photo_manager (from `.symlinks/plugins/photo_manager/ios`)
   - platform_device_id (from `.symlinks/plugins/platform_device_id/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/ios`)
+  - TOCropViewController
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/ios`)
+
+SPEC REPOS:
+  trunk:
+    - TOCropViewController
 
 EXTERNAL SOURCES:
   camera_avfoundation:
@@ -42,12 +55,16 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/device_info_plus/ios"
   Flutter:
     :path: Flutter
+  image_editor_common:
+    :path: ".symlinks/plugins/image_editor_common/ios"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
   modal_progress_hud_nsn:
     :path: ".symlinks/plugins/modal_progress_hud_nsn/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/ios"
+  photo_manager:
+    :path: ".symlinks/plugins/photo_manager/ios"
   platform_device_id:
     :path: ".symlinks/plugins/platform_device_id/ios"
   shared_preferences_foundation:
@@ -60,13 +77,16 @@ SPEC CHECKSUMS:
   device_info: d7d233b645a32c40dfdc212de5cf646ca482f175
   device_info_plus: e5c5da33f982a436e103237c0c85f9031142abed
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  image_editor_common: d6f6644ae4a6de80481e89fe6d0a8c49e30b4b43
   image_picker_ios: 4a8aadfbb6dc30ad5141a2ce3832af9214a705b5
   modal_progress_hud_nsn: f6fb744cd060653d66ed8f325360ef3650eb2fde
   path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
+  photo_manager: 4f6810b7dfc4feb03b461ac1a70dacf91fba7604
   platform_device_id: 81b3e2993881f87d0c82ef151dc274df4869aef5
   shared_preferences_foundation: 5b919d13b803cadd15ed2dc053125c68730e5126
+  TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
   webview_flutter_wkwebview: b7e70ef1ddded7e69c796c7390ee74180182971f
 
-PODFILE CHECKSUM: ef19549a9bc3046e7bb7d2fab4d021637c0c58a3
+PODFILE CHECKSUM: ea1e9957e55d7192defe4e3ab573b91b37a1e05b
 
 COCOAPODS: 1.15.2

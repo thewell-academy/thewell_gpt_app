@@ -28,6 +28,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>This app uses the camera to capture photos that you can use to ask questions.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+    <string>We need access to your photo library to save edited photos.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We need access to your location.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

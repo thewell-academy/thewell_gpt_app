@@ -2,11 +2,10 @@ import 'package:platform_device_id/platform_device_id.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'dart:async';  // Import for Timer
-import 'server_config.dart';
 
 Timer? _retryTimer;
 
-String serverUrl = gptServerUrl;
+String serverUrl = "http://gpt.thewell-academy.com";
 
 Future<void> serverHandShake(Function(String, Color) updateStatus) async {
 
@@ -15,7 +14,7 @@ Future<void> serverHandShake(Function(String, Color) updateStatus) async {
 
     // Add a timeout of 10 seconds to the HTTP request
     final response = await http
-        .get(Uri.parse('$serverUrl/ping'))
+        .get(Uri.parse('$serverUrl/auth/$deviceId'))
         .timeout(const Duration(seconds: 5));
 
     if (response.statusCode != 200) {

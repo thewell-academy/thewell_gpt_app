@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -29,9 +31,9 @@ class _HistoryViewerState extends State<HistoryViewer> {
   String _startDateString = "시작 날짜";
   String _endDateString = "종료 날짜";
 
-
   @override
   Widget build(BuildContext context) {
+    var now = DateTime.now();
     return Scaffold(
       appBar: AppBar(title: const Text("질문 기록")),
       body: Column(
@@ -43,12 +45,7 @@ class _HistoryViewerState extends State<HistoryViewer> {
                 width: MediaQuery.of(context).size.width * 0.45,
                 child: ElevatedButton(
                     onPressed: () async {
-                      final DateTime? datetime = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2024),
-                          lastDate: DateTime(3000)
-                      );
+                      final DateTime? datetime = await _showCupertinoDatePicker(context, now.subtract(Duration(days: 365*20)), now, now);
                       if (datetime != null){
                         startDay = datetime;
                         setState(() {
@@ -64,12 +61,7 @@ class _HistoryViewerState extends State<HistoryViewer> {
                 width: MediaQuery.of(context).size.width * 0.45,
                 child: ElevatedButton(
                     onPressed: () async {
-                      final DateTime? datetime = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2024),
-                          lastDate: DateTime(3000)
-                      );
+                      final DateTime? datetime = await _showCupertinoDatePicker(context, now.subtract(Duration(days: 1)), now, now);
                       if (datetime != null){
                         endDay = datetime;
                         setState(() {
@@ -111,7 +103,7 @@ class _HistoryViewerState extends State<HistoryViewer> {
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
-                          return AlertDialog(
+                          return CupertinoAlertDialog(
                             title: Text('오류'),
                             content: Text('시작 또는 종료 날짜를 선택해주세요.'),
                             actions: <Widget>[
@@ -129,7 +121,7 @@ class _HistoryViewerState extends State<HistoryViewer> {
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
-                          return AlertDialog(
+                          return CupertinoAlertDialog(
                             title: Text('오류'),
                             content: Text('종료 날짜는 시작 날짜 이후로 설정되어야 합니다.'),
                             actions: <Widget>[
@@ -230,6 +222,48 @@ class _HistoryViewerState extends State<HistoryViewer> {
           )
         ],
       ),
+    );
+  }
+
+  Future<DateTime?> _showCupertinoDatePicker(
+      BuildContext context,
+      DateTime minDateTime,
+      DateTime maxDateTime,
+      DateTime now
+      ) {
+    DateTime selectedDate = now;
+
+    return showModalBottomSheet<DateTime>(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 250,
+          child: Column(
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: CupertinoButton(
+                  child: Text("완료"),
+                  onPressed: () {
+                    Navigator.of(context).pop(selectedDate);  // Return the selected date
+                  },
+                ),
+              ),
+              Expanded(
+                child: CupertinoDatePicker(
+                  initialDateTime: selectedDate,
+                  mode: CupertinoDatePickerMode.date,
+                  minimumDate: minDateTime,
+                  maximumDate: maxDateTime,
+                  onDateTimeChanged: (DateTime newDate) {
+                    selectedDate = newDate;  // Update selectedDate whenever the user scrolls
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
