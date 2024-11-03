@@ -1,11 +1,13 @@
 import 'package:platform_device_id/platform_device_id.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'dart:async';  // Import for Timer
+import 'dart:async';
+
+import 'package:thewell_frontend/util/server_config.dart';  // Import for Timer
 
 Timer? _retryTimer;
 
-String serverUrl = "http://gpt.thewell-academy.com";
+String serverUrl = gptServerUrl;
 
 Future<void> serverHandShake(Function(String, Color) updateStatus) async {
 

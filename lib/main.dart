@@ -1,5 +1,7 @@
 import 'package:camera/camera.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart' as picker;
 import 'package:image_editor/image_editor.dart' as editor;
 import 'package:image_picker/image_picker.dart';
@@ -12,6 +14,9 @@ import 'dart:io';
 import 'auth/login.dart';
 import 'camera/answer_viewer.dart';
 import 'package:http/http.dart' as http;
+
+const platform = MethodChannel('com.example.thewellFrontend/image_editor');
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -114,61 +119,29 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Function to capture image using the native camera app
   Future<void> _takePictureAndEdit() async {
+    setState(() {
+      _image = null;
+    });
     try {
-      // Pick an image using the camera
-      final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+      // Call native code to open the camera with editing enabled
+      final editedImagePath = await platform.invokeMethod<String>('takeAndEditPhoto');
 
-      if (pickedFile != null) {
-        // Set the captured image file in state
-        _image = File(pickedFile.path);
+      if (editedImagePath != null) {
+        setState(() {
+          _image = File(editedImagePath);
+        });
+      } else {
+        print("Edited image path is null.");
 
-        // Request permission to access photos using the updated method
-        final permission = await PhotoManager.requestPermissionExtend();
-
-        if (permission.isAuth) {  // Check if the permission was granted
-          // Save the image to the photo library
-          final assetEntity = await PhotoManager.editor.saveImageWithPath(pickedFile.path, title: '');
-
-          if (assetEntity != null) {
-            // Open the image for editing
-            final editedFile = await _editImage(assetEntity);
-            if (editedFile != null) {
-              setState(() {
-                _image = editedFile;
-              });
-            }
-          }
-        } else {
-          // Handle permission denial
-          print("Permission denied");
-        }
       }
-    } catch (e) {
-      print("Error taking or editing picture: $e");
+    } on PlatformException catch (e) {
+      setState(() {
+        _image = null;
+      });
+      print("Error editing picture: $e");
     }
   }
 
-  Future<File?> _editImage(AssetEntity assetEntity) async {
-    try {
-      final file = await assetEntity.file;
-      if (file != null) {
-        // Configure the crop options
-        final cropOption = editor.ImageEditorOption();
-        cropOption.addOption(editor.ClipOption(width: 1000, height: 1000)); // Set crop size as desired
-
-        final editedImage = await editor.ImageEditor.editFileImage(
-          file: file,
-          imageEditorOption: cropOption,
-        );
-
-        // Return the edited file
-        return File.fromRawPath(editedImage!);
-      }
-    } catch (e) {
-      print("Error editing image: $e");
-    }
-    return null;
-  }
 
   Future<void> _browsePicture() async {
     try {
@@ -184,6 +157,9 @@ class _MyHomePageState extends State<MyHomePage> {
         await _showConfirmationDialog();
       }
     } catch (e) {
+      setState(() {
+        _image = null;
+      });
       print("Error taking picture: $e");
     }
   }
@@ -236,22 +212,23 @@ class _MyHomePageState extends State<MyHomePage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
+        return CupertinoAlertDialog(
           title: Text("로그아웃"),
           content: Text("정말 로그아웃 할까요?"),
           actions: [
-            TextButton(
+            CupertinoDialogAction(
               onPressed: () {
                 Navigator.of(context).pop();  // Close the dialog
               },
               child: Text("아니오"),
             ),
-            TextButton(
+            CupertinoDialogAction(
               onPressed: () {
                 Navigator.of(context).pop();  // Close the dialog
                 _logout(context);  // Proceed with logout
               },
               child: Text("네"),
+              isDefaultAction: true,
             ),
           ],
         );
